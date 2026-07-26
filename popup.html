@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FB Empire Helper V3.0</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <main>
+        <!-- Header -->
+        <header>
+            <h1>🚀 FB Empire Helper</h1>
+            <p class="subtitle">v3.0.0</p>
+        </header>
+
+        <!-- Status Section -->
+        <section class="status-section">
+            <div class="line">
+                <span id="dot" class="dot off"></span>
+                <b id="connection">Python offline</b>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-row">
+                    <span class="label">Screen:</span>
+                    <span id="screen" class="value">
+                        unknown
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Composer:</span>
+                    <span id="composer-step" class="value">
+                        -
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Action:</span>
+                    <span id="action" class="value muted">
+                        Idle
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Tabs:</span>
+                    <span id="tab-info" class="value muted">
+                        Tabs: 0 | Active: -
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Messages:</span>
+                    <span id="messages" class="value muted">
+                        Sent: 0 | Recv: 0
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Uptime:</span>
+                    <span id="uptime" class="value muted">
+                        -
+                    </span>
+                </div>
+            </div>
+
+            <div id="error-box" class="error hidden">
+                <span id="error-msg"></span>
+            </div>
+        </section>
+
+        <!-- Primary Actions -->
+        <section class="actions">
+            <div class="btn-group">
+                <button id="refresh" class="btn primary">
+                    ↻ Refresh
+                </button>
+
+                <button id="reconnect" class="btn secondary">
+                    🔌 Reconnect
+                </button>
+
+                <button id="ping" class="btn">
+                    💓 Ping
+                </button>
+            </div>
+
+            <div class="btn-group">
+                <button id="page-info" class="btn">
+                    📋 Page Info
+                </button>
+
+                <button id="composer-check" class="btn">
+                    🎬 Composer
+                </button>
+
+                <button id="upload-check" class="btn">
+                    📤 Upload
+                </button>
+            </div>
+
+            <div class="btn-group">
+                <button id="switch-tab" class="btn">
+                    🔀 Tab Info
+                </button>
+
+                <button id="debug" class="btn">
+                    🔎 List Elements
+                </button>
+            </div>
+        </section>
+
+        <!-- Output -->
+        <section class="output-section">
+            <div class="output-header">
+                <span>Output:</span>
+                <button id="clear" class="btn-mini">
+                    Clear
+                </button>
+            </div>
+            <pre id="output">Ready. Click a button above.</pre>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p class="muted">
+                WebSocket: ws://localhost:8765
+            </p>
+        </footer>
+    </main>
+
+    <script src="popup.js"></script>
+</body>
+</html>
