@@ -1,0 +1,1542 @@
+📊 FB EMPIRE AUTO-BOT V10.0 - COMPLETE DETAILED FLOWCHART
+🏗️ SYSTEM ARCHITECTURE OVERVIEW
+text
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    FB EMPIRE AUTO-BOT V10.0                         │
+│                    Premium Edition                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐          │
+│   │   UI     │  │  CORE    │  │  ENGINE  │  │  OUTPUT  │          │
+│   │  LAYER   │→ │  LOGIC   │→ │  LAYER   │→ │  LAYER   │          │
+│   └──────────┘  └──────────┘  └──────────┘  └──────────┘          │
+│                                                                     │
+│   CustomTkinter  Python       FFmpeg        Facebook               │
+│   + Widgets      Threading    OpenCV        Selenium               │
+│                  SQLite       yt-dlp        ChromeDriver           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+📁 FILE ARCHITECTURE & DEPENDENCIES
+text
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                         FILE MAP                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   main.py ─────────────────── IMPORTS FROM ──────────────────────  │
+│   │                                                                 │
+│   ├──→ db_manager.py           SQLite3 (built-in)                  │
+│   ├──→ downloader.py           yt-dlp, instaloader, requests       │
+│   ├──→ video_editor.py         FFmpeg (subprocess), mutagen        │
+│   ├──→ uploader.py             Selenium, PyAutoGUI, PyPerclip      │
+│   ├──→ ai_writer.py            OpenAI API                          │
+│   ├──→ thumbnail_gen.py        OpenCV, Pillow                      │
+│   ├──→ preset_manager.py       JSON (built-in)                     │
+│   ├──→ sheet_manager.py        Pandas, OpenPyXL                    │
+│   └──→ scheduler.py            APScheduler                         │
+│                                                                     │
+│   STANDALONE FILES:                                                 │
+│   ├── chrome_profile_cloner.py  shutil, psutil                     │
+│   ├── requirements.txt          pip packages list                   │
+│   └── README.md                 documentation                      │
+│                                                                     │
+│   DATA FILES (Auto-created):                                        │
+│   ├── fb_automation_v3.db       SQLite database                    │
+│   ├── presets/user_presets.json  Custom presets                     │
+│   ├── cookies/*.txt             Browser cookies                    │
+│   └── downloads/*/              Video/image files                  │
+│                                                                     │
+│   EXTERNAL TOOLS (Manual install):                                  │
+│   ├── chromedriver.exe          Chrome automation                  │
+│   ├── ffmpeg.exe                Video processing                   │
+│   └── ffprobe.exe               Video analysis                    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+🔄 COMPLETE APPLICATION FLOW
+text
+
+USER OPENS APP
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  main.py → FBAutomationApp.__init__()                           │
+│                                                                  │
+│  INITIALIZES:                                                    │
+│  ├── CustomTkinter window (1400x900, dark theme)                │
+│  ├── Downloader() instance          ← downloader.py             │
+│  ├── AIWriter() instance            ← ai_writer.py              │
+│  ├── ThumbnailGenerator() instance  ← thumbnail_gen.py          │
+│  ├── Threading locks & flags                                     │
+│  ├── State tracking variables                                    │
+│  ├── Default preset (StealthMax v2.0)                           │
+│  │                                                               │
+│  BUILDS UI:                                                      │
+│  ├── _build_layout()                                             │
+│  │   ├── Sidebar (220px, left)                                   │
+│  │   ├── Top bar (60px, logo + status)                          │
+│  │   ├── Container (main content area)                          │
+│  │   └── Status bar (32px, bottom)                              │
+│  │                                                               │
+│  └── show_home_screen()  → Dashboard                            │
+│                                                                  │
+│  LIBRARIES USED:                                                 │
+│  ├── customtkinter    → All UI widgets                          │
+│  ├── threading        → Background tasks                        │
+│  ├── os, shutil       → File operations                         │
+│  ├── json             → Config storage                          │
+│  ├── datetime         → Timestamps                              │
+│  └── psutil           → Process management                      │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+🏠 SCREEN 1: DASHBOARD FLOW
+text
+
+DASHBOARD SCREEN
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  show_home_screen()                                              │
+│                                                                  │
+│  ┌─── STEP 1: COMPUTE GLOBAL STATS ───┐                        │
+│  │                                      │                        │
+│  │  db.get_all_workspaces()             │  ← db_manager.py      │
+│  │       │                              │     SQLite3 query      │
+│  │       ▼                              │                        │
+│  │  FOR EACH workspace:                 │                        │
+│  │    db.get_workspace_stats(name)      │  ← COUNT videos       │
+│  │       │                              │     by status          │
+│  │       ▼                              │                        │
+│  │  CALCULATE:                          │                        │
+│  │  ├── total_workspaces                │                        │
+│  │  ├── active_ws (not archived)        │                        │
+│  │  ├── total_videos                    │                        │
+│  │  ├── total_published                 │                        │
+│  │  ├── total_pending                   │                        │
+│  │  ├── total_failed                    │                        │
+│  │  └── success_rate (%)                │                        │
+│  │                                      │                        │
+│  └──────────────────────────────────────┘                        │
+│                                                                  │
+│  ┌─── STEP 2: RENDER UI ──────────────┐                         │
+│  │                                      │                        │
+│  │  _build_stat_card() × 4             │  ← 4 stat cards        │
+│  │  _build_action_card() × 3           │  ← Quick actions       │
+│  │  _build_compact_workspace_card()    │  ← Recent workspaces   │
+│  │                                      │                        │
+│  │  EACH CARD CALLS:                    │                        │
+│  │  ├── db.get_workspace_stats()       │  ← Video counts        │
+│  │  ├── db.get_workspace_persona()     │  ← Device/city info    │
+│  │  └── time_ago()                     │  ← Last activity       │
+│  │                                      │                        │
+│  └──────────────────────────────────────┘                        │
+│                                                                  │
+│  LIBRARIES:                                                      │
+│  ├── customtkinter → CTkFrame, CTkLabel, CTkButton              │
+│  ├── datetime      → Time calculations                          │
+│  └── db_manager    → All database queries                       │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+📁 SCREEN 2: WORKSPACES SCREEN FLOW
+text
+
+WORKSPACES SCREEN
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  show_workspaces_screen()                                        │
+│                                                                  │
+│  ┌─── TOOLBAR ────────────────────────┐                         │
+│  │                                      │                        │
+│  │  🔍 Search Entry                    │  ← Live filter         │
+│  │     │ bind("<KeyRelease>")           │     _on_search_change  │
+│  │     ▼                                │                        │
+│  │  Sort Dropdown                       │  ← Recent/Name/        │
+│  │     [Recent, Name, Videos, Activity] │     Videos/Activity    │
+│  │     │                                │                        │
+│  │  Filter Dropdown                     │  ← Active/All/        │
+│  │     [Active, All, Pinned, Archived]  │     Pinned/Archived   │
+│  │                                      │                        │
+│  └──────────────────────────────────────┘                        │
+│                                                                  │
+│  ┌─── RENDERING LOGIC ───────────────┐                          │
+│  │                                      │                        │
+│  │  _render_workspaces_list()           │                        │
+│  │       │                              │                        │
+│  │       ├── FILTER by mode:            │                        │
+│  │       │   ├── "active"  → is_archived=0                      │
+│  │       │   ├── "all"     → include all                        │
+│  │       │   ├── "pinned"  → is_pinned=1                        │
+│  │       │   └── "archived"→ is_archived=1                      │
+│  │       │                              │                        │
+│  │       ├── SEARCH filter:             │                        │
+│  │       │   └── name LIKE %query%      │                        │
+│  │       │                              │                        │
+│  │       ├── SORT by:                   │                        │
+│  │       │   ├── "recent"  → added_on DESC                      │
+│  │       │   ├── "name"    → profile_name ASC                   │
+│  │       │   ├── "videos"  → video count DESC                   │
+│  │       │   └── "activity"→ last_activity DESC                 │
+│  │       │                              │                        │
+│  │       └── RENDER cards:              │                        │
+│  │           ├── Pinned section          │                        │
+│  │           └── Regular section         │                        │
+│  │                                      │                        │
+│  └──────────────────────────────────────┘                        │
+│                                                                  │
+│  ┌─── WORKSPACE CARD ────────────────┐                          │
+│  │                                      │                        │
+│  │  _build_workspace_card(ws)           │                        │
+│  │       │                              │                        │
+│  │       ├── Name + Badges (pin/archive)│                        │
+│  │       ├── Persona badge:             │                        │
+│  │       │   └── db.get_workspace_persona()                      │
+│  │       ├── 4 Stat boxes:              │                        │
+│  │       │   └── db.get_workspace_stats()                        │
+│  │       ├── Progress bar               │                        │
+│  │       ├── Last activity              │                        │
+│  │       ├── Open button → show_workspace()                      │
+│  │       └── Menu button (⋮) → _show_workspace_menu()           │
+│  │                                      │                        │
+│  └──────────────────────────────────────┘                        │
+│                                                                  │
+│  ┌─── CONTEXT MENU (⋮) ──────────────┐                         │
+│  │                                      │                        │
+│  │  _show_workspace_menu()              │                        │
+│  │       │                              │                        │
+│  │       ├── Open        → show_workspace()                      │
+│  │       ├── Rename      → _show_rename_dialog()                │
+│  │       ├── Duplicate   → _show_duplicate_dialog()             │
+│  │       ├── Export JSON → _export_workspace()                  │
+│  │       ├── View Persona→ _show_persona_quickview()            │
+│  │       ├── Manage Tags → _show_tags_dialog()                  │
+│  │       ├── Pin/Unpin   → db.toggle_pin_workspace()            │
+│  │       ├── Archive     → db.toggle_archive_workspace()        │
+│  │       └── Delete      → _show_delete_dialog()                │
+│  │                                      │                        │
+│  └──────────────────────────────────────┘                        │
+│                                                                  │
+│  DATABASE QUERIES USED:                                          │
+│  ├── db.get_all_workspaces()                                    │
+│  ├── db.get_workspace_stats()                                   │
+│  ├── db.get_workspace_persona()                                 │
+│  ├── db.get_workspace_tags()                                    │
+│  ├── db.get_workspace_details()                                 │
+│  ├── db.toggle_pin_workspace()                                  │
+│  ├── db.toggle_archive_workspace()                              │
+│  ├── db.rename_workspace()                                      │
+│  ├── db.delete_workspace()                                      │
+│  ├── db.duplicate_workspace()                                   │
+│  └── db.update_workspace_tags()                                 │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+➕ CREATE WORKSPACE FLOW
+text
+
+CREATE WORKSPACE
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  show_create_profile_screen()                                    │
+│       │                                                          │
+│       ▼                                                          │
+│  USER ENTERS:                                                    │
+│  ├── Workspace name: "Funny Cats Hub"                           │
+│  ├── FB page URL: "https://facebook.com/funnycats"              │
+│  └── Chrome path: Auto-filled → C:\ChromeBot\Funny_Cats_Hub\Default│
+│                                                                  │
+│       │ on_name_change() triggered                               │
+│       │ (bind "<KeyRelease>" on name entry)                     │
+│       │                                                          │
+│       ▼                                                          │
+│  save_profile()                                                  │
+│       │                                                          │
+│       ├── STEP 1: Create Chrome folder                          │
+│       │   └── os.makedirs(chrome_path)                          │
+│       │                                                          │
+│       ├── STEP 2: Save to database                              │
+│       │   └── db.add_workspace(name, url, chrome_path, "")      │
+│       │       │                                                  │
+│       │       └── INSERT INTO workspaces (...)                  │
+│       │           + SET added_on = now()                         │
+│       │           + SET last_activity = now()                    │
+│       │                                                          │
+│       ├── STEP 3: Auto-generate persona                         │
+│       │   └── generate_workspace_persona()  ← video_editor.py  │
+│       │       │                                                  │
+│       │       ├── random.choice(DEVICE_DATABASE)                │
+│       │       │   Returns: {make, model, software,              │
+│       │       │             camera_app, encoder, codec}          │
+│       │       │   13 real devices:                               │
+│       │       │   ├── iPhone 15 Pro, 14 Pro Max, 14, 13        │
+│       │       │   ├── Samsung S23 Ultra, S23, S22 Ultra, S21   │
+│       │       │   ├── Pixel 8 Pro, 7 Pro, 7                    │
+│       │       │   └── OnePlus 11                                │
+│       │       │                                                  │
+│       │       ├── random.choice(USA_CITIES)                     │
+│       │       │   Returns: {city, state, lat, lon}              │
+│       │       │   15 US cities:                                  │
+│       │       │   ├── New York, LA, Chicago, Houston            │
+│       │       │   ├── Phoenix, Philadelphia, San Antonio        │
+│       │       │   ├── San Diego, Dallas, Miami                  │
+│       │       │   ├── Seattle, Denver, Boston                   │
+│       │       │   └── Atlanta, Las Vegas                        │
+│       │       │                                                  │
+│       │       └── Returns persona dict:                         │
+│       │           {make, model, device_name, software,          │
+│       │            software_full, camera_app, encoder,          │
+│       │            codec, color_primaries, handler,             │
+│       │            city, state, country, gps_base_lat,          │
+│       │            gps_base_lon, gps_variance, created_on}      │
+│       │                                                          │
+│       │   └── db.save_workspace_persona(name, persona)          │
+│       │       └── UPDATE workspaces SET persona_json = ?        │
+│       │                                                          │
+│       ├── STEP 4: Initialize Excel log                          │
+│       │   └── log_to_workspace_excel(name, {init data})         │
+│       │       ├── get_workspace_excel_path(name)                │
+│       │       │   └── Returns: C:\ChromeBot\Name\Name_log.xlsx │
+│       │       ├── Workbook() + headers                          │
+│       │       └── wb.save(file_path)                            │
+│       │                                                          │
+│       └── STEP 5: Show toast + navigate to workspaces           │
+│           └── ToastNotification(self, "Created!", "success")    │
+│                                                                  │
+│  LIBRARIES:                                                      │
+│  ├── os          → makedirs, path operations                    │
+│  ├── random      → Device/city selection                        │
+│  ├── json        → Persona serialization                        │
+│  ├── openpyxl    → Excel creation                               │
+│  ├── sqlite3     → Database (via db_manager)                    │
+│  └── datetime    → Timestamps                                  │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+📥 VIDEO DOWNLOAD FLOW (Detailed)
+text
+
+USER CLICKS "📥 Download & Process"
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  start_manual_download()                                         │
+│       │                                                          │
+│       ├── db.update_video_status(id, "STARTING...")              │
+│       ├── Set stop/pause flags = False                          │
+│       └── threading.Thread(target=background_processor)         │
+│                              │                                   │
+│                              ▼                                   │
+│  background_processor()  ← RUNS IN BACKGROUND THREAD            │
+│       │                                                          │
+│  ┌─── STEP 1: DOWNLOAD ──────────────────────────────┐          │
+│  │                                                      │        │
+│  │  IF url is local file (os.path.exists):              │        │
+│  │    raw_path = url (skip download)                    │        │
+│  │                                                      │        │
+│  │  ELSE: Download from internet                        │        │
+│  │    │                                                  │        │
+│  │    ▼                                                  │        │
+│  │  self.downloader.download_video()                    │        │
+│  │    ← downloader.py (Downloader class)                │        │
+│  │       │                                               │        │
+│  │       ├── detect_platform(url)                        │        │
+│  │       │   URL pattern matching:                       │        │
+│  │       │   ├── youtube.com → "YouTube"                │        │
+│  │       │   ├── tiktok.com  → "TikTok"                │        │
+│  │       │   ├── instagram   → "Instagram"              │        │
+│  │       │   ├── facebook    → "Facebook"               │        │
+│  │       │   ├── twitter/x   → "Twitter/X"              │        │
+│  │       │   └── etc.                                    │        │
+│  │       │                                               │        │
+│  │       ├── detect_content_type(url)                    │        │
+│  │       │   Returns: 'video' / 'image' / 'auto'       │        │
+│  │       │                                               │        │
+│  │       ├── HumanBehavior.apply_random_wait()          │        │
+│  │       │   ├── Platform-specific delays:              │        │
+│  │       │   │   YouTube: 3-8s                          │        │
+│  │       │   │   TikTok: 5-12s                          │        │
+│  │       │   │   Instagram: 8-20s                       │        │
+│  │       │   │   Facebook: 10-25s                       │        │
+│  │       │   │   Twitter: 10-30s                        │        │
+│  │       │   │                                           │        │
+│  │       │   ├── Consecutive downloads increase delay   │        │
+│  │       │   │   >5 downloads: delay × 1.5              │        │
+│  │       │   │   >10 downloads: delay × 2               │        │
+│  │       │   │                                           │        │
+│  │       │   ├── After 15 downloads:                     │        │
+│  │       │   │   → take_break(60-180 seconds)           │        │
+│  │       │   │                                           │        │
+│  │       │   └── Weighted random:                        │        │
+│  │       │       20% quick, 50% normal, 30% slow        │        │
+│  │       │                                               │        │
+│  │       ├── _build_ydl_opts()                           │        │
+│  │       │   ├── Random user-agent                       │        │
+│  │       │   │   (8 desktop + 3 mobile)                 │        │
+│  │       │   ├── Cookie file (if exists):                │        │
+│  │       │   │   cookies/{platform}_cookies.txt          │        │
+│  │       │   ├── Format selection:                       │        │
+│  │       │   │   bestvideo[mp4]+bestaudio[m4a]          │        │
+│  │       │   ├── Sleep intervals (random)                │        │
+│  │       │   ├── Retry logic (5 retries)                │        │
+│  │       │   └── Platform-specific headers              │        │
+│  │       │                                               │        │
+│  │       ├── yt_dlp.YoutubeDL.extract_info()            │        │
+│  │       │   Library: yt-dlp                             │        │
+│  │       │   ├── Fetches metadata first                  │        │
+│  │       │   ├── Shows available qualities               │        │
+│  │       │   └── Downloads at max quality                │        │
+│  │       │                                               │        │
+│  │       ├── IF yt-dlp fails for Instagram:             │        │
+│  │       │   └── _download_instagram_alt()              │        │
+│  │       │       Library: instaloader                    │        │
+│  │       │       ├── Post.from_shortcode()              │        │
+│  │       │       └── download_post()                     │        │
+│  │       │                                               │        │
+│  │       ├── IF direct image URL:                        │        │
+│  │       │   └── _download_direct_image()               │        │
+│  │       │       Library: requests                       │        │
+│  │       │       ├── GET with random UA                  │        │
+│  │       │       └── Save to raw_images/                 │        │
+│  │       │                                               │        │
+│  │       ├── _find_downloaded_file()                     │        │
+│  │       │   4 strategies:                               │        │
+│  │       │   ├── Match by video_id                      │        │
+│  │       │   ├── Match by title                          │        │
+│  │       │   ├── Most recent file (<5min)                │        │
+│  │       │   └── Any video/image file                    │        │
+│  │       │                                               │        │
+│  │       └── Returns: {status, file_path, title,        │        │
+│  │                      video_id, size_mb, platform}     │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STOP/PAUSE CHECK ──────────────────────────────┐          │
+│  │  _check_stop_pause(video_id)                        │         │
+│  │  ├── IF paused: time.sleep(0.5) loop               │         │
+│  │  ├── IF stopped: return True (abort)                │         │
+│  │  └── Checked between each step                      │         │
+│  └─────────────────────────────────────────────────────┘         │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+🎬 VIDEO EDITING FLOW (Anti-Detect)
+text
+
+STEP 2: VIDEO EDITING
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  make_video_unique()  ← video_editor.py                         │
+│       │                                                          │
+│  ┌─── INPUTS ─────────────────────────────────────────┐         │
+│  │  input_path    : Raw downloaded video               │         │
+│  │  output_path   : Edited video destination           │         │
+│  │  preset        : Editing settings dict              │         │
+│  │  persona       : Workspace persona dict             │         │
+│  └─────────────────────────────────────────────────────┘         │
+│                                                                  │
+│  ┌─── STEP 2a: PRE-FLIGHT ────────────────────────────┐         │
+│  │                                                      │        │
+│  │  check_ffmpeg()                                      │        │
+│  │    └── subprocess.run(["ffmpeg", "-version"])        │        │
+│  │                                                      │        │
+│  │  probe_video_info(input_path)                        │        │
+│  │    └── subprocess.run(["ffprobe", ...])              │        │
+│  │    Returns: {width, height, fps, duration}           │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 2b: METADATA SPOOFING ─────────────────────┐        │
+│  │                                                      │        │
+│  │  build_metadata_from_persona(persona)                │        │
+│  │       │                                               │        │
+│  │       ├── Device info (from persona - LOCKED):       │        │
+│  │       │   make, model, software                      │        │
+│  │       │                                               │        │
+│  │       ├── GPS coords (random within city):           │        │
+│  │       │   generate_persona_gps(persona)              │        │
+│  │       │   base_lat ± 0.02 (≈2km variation)          │        │
+│  │       │                                               │        │
+│  │       ├── Timestamp:                                  │        │
+│  │       │   generate_realistic_date(30 days)           │        │
+│  │       │   Business hours weighted                     │        │
+│  │       │                                               │        │
+│  │       └── Apple vs Android specific tags             │        │
+│  │           IF Apple: com.apple.quicktime.*            │        │
+│  │           IF Android: handler_name, encoder          │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 2c: VIDEO FILTER CHAIN ────────────────────┐         │
+│  │                                                      │        │
+│  │  FFmpeg filters built in order:                      │        │
+│  │                                                      │        │
+│  │  1. setpts={1/speed}*PTS                             │  Speed │
+│  │     └── Speed change (0.94-1.10x)                   │        │
+│  │                                                      │        │
+│  │  2. crop={w}:{h}:{x}:{y}                            │  Crop  │
+│  │     └── Crop 88-99% (Center/Top/Bottom/etc.)        │        │
+│  │                                                      │        │
+│  │  3. rotate={rad}:fillcolor=black@0                   │  Rotate│
+│  │     └── Micro rotation (0.05-0.2°)                  │        │
+│  │                                                      │        │
+│  │  4. hflip (optional)                                 │  Mirror│
+│  │                                                      │        │
+│  │  5. eq=brightness:saturation:contrast                │  Color │
+│  │     OR colorbalance (if color grade preset)          │        │
+│  │     Presets: None/Warm/Cool/Cinematic/               │        │
+│  │             Vintage/Vibrant                          │        │
+│  │                                                      │        │
+│  │  6. colorchannelmixer=rr:rg:rb:gr:gg:gb:br:bg:bb    │  RGB   │
+│  │     └── ±0.004 per channel (invisible)              │        │
+│  │                                                      │        │
+│  │  7. noise=alls={1-2}:allf=t                          │  Hash  │
+│  │     └── Light noise (breaks perceptual hash)        │ Break  │
+│  │                                                      │        │
+│  │  8. noise=alls={1-10}:allf=t+u                       │  Grain │
+│  │     └── Film grain simulation                        │        │
+│  │                                                      │        │
+│  │  9. vignette=PI/X (optional)                         │        │
+│  │                                                      │        │
+│  │  10. unsharp=5:5:{amt}:5:5:0 (optional)             │ Sharp  │
+│  │                                                      │        │
+│  │  11. perspective=x0:y0:x1:y1:x2:y2:x3:y3            │  Warp  │
+│  │      └── 1-3px perspective distortion               │        │
+│  │                                                      │        │
+│  │  12. pad={w+px*2}:{h+px*2}:{px}:{px}:black           │ Border │
+│  │      └── 1-2px invisible border                     │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 2d: AUDIO FILTER CHAIN ────────────────────┐         │
+│  │                                                      │        │
+│  │  build_audio_filters():                              │        │
+│  │                                                      │        │
+│  │  1. atempo={speed}                                   │ Speed  │
+│  │     └── Audio tempo sync with video                 │        │
+│  │                                                      │        │
+│  │  2. volume={vol}                                     │ Volume │
+│  │     └── 0.3-2.0x volume                             │        │
+│  │                                                      │        │
+│  │  3. equalizer (optional bass boost)                  │        │
+│  │                                                      │        │
+│  │  4. adelay={1-3}|{1-3},aresample=async=1            │ Phase  │
+│  │     └── Audio phase shift (anti-detect)             │        │
+│  │                                                      │        │
+│  │  5. compand=attacks:decays:points                    │ Range  │
+│  │     └── Dynamic range compression                   │        │
+│  │                                                      │        │
+│  │  6. volume={1.001-1.004}                             │ Micro  │
+│  │     └── Micro harmonic variation                    │        │
+│  │                                                      │        │
+│  │  7. afade=in/out (optional)                          │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 2e: FFMPEG EXECUTION ──────────────────────┐         │
+│  │                                                      │        │
+│  │  BUILD COMMAND:                                      │        │
+│  │  ffmpeg -y -ss {trim}                                │        │
+│  │         -i {temp_input}                              │        │
+│  │         -vf "{video_filters}"                        │        │
+│  │         -af "{audio_filters}"                        │        │
+│  │         -metadata make=Apple                         │        │
+│  │         -metadata model=iPhone...                    │        │
+│  │         -metadata location=+40.7128...               │        │
+│  │         -c:v libx264 -crf {18-23}                    │        │
+│  │         -preset {medium/slow/fast}                   │        │
+│  │         -g {60-150} -bf {2-4}                        │ Random │
+│  │         -refs {1-4} -subq {6-9}                      │ Params │
+│  │         -c:a aac -b:a 192k                           │        │
+│  │         -movflags +faststart                         │        │
+│  │         {temp_output}                                │        │
+│  │                                                      │        │
+│  │  subprocess.Popen(command)                           │        │
+│  │  ├── Read stderr for progress                        │        │
+│  │  └── Wait for completion                             │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 2f: DEEP METADATA POISONING ───────────────┐         │
+│  │                                                      │        │
+│  │  apply_mutagen_metadata()                            │        │
+│  │    Library: mutagen (MP4 class)                      │        │
+│  │                                                      │        │
+│  │    ├── Remove fake tags:                             │        │
+│  │    │   ├── \xa9nam (title) → DELETE                  │        │
+│  │    │   ├── \xa9ART (artist) → DELETE                 │        │
+│  │    │   ├── \xa9alb (album) → DELETE                  │        │
+│  │    │   └── trkn, cprt → DELETE                       │        │
+│  │    │                                                  │        │
+│  │    └── Set real tags:                                 │        │
+│  │        ├── \xa9day → creation date                   │        │
+│  │        └── \xa9too → camera app name                 │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  LIBRARIES:                                                      │
+│  ├── subprocess  → FFmpeg execution                             │
+│  ├── shutil      → File copy/move                               │
+│  ├── tempfile    → Temp directory                               │
+│  ├── random      → Random params                                │
+│  ├── mutagen     → MP4 metadata                                 │
+│  └── uuid        → Unique identifiers                           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+🖼️ THUMBNAIL GENERATION FLOW
+text
+
+STEP 3: THUMBNAIL
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ThumbnailGenerator.generate_thumbnail()                         │
+│  ← thumbnail_gen.py                                             │
+│                                                                  │
+│  ┌─── STEP 3a: SMART FRAME EXTRACTION ────────────────┐        │
+│  │                                                      │        │
+│  │  _extract_smart_frames()                             │        │
+│  │    Library: OpenCV (cv2)                             │        │
+│  │                                                      │        │
+│  │    ├── cv2.VideoCapture(video_path)                  │        │
+│  │    ├── Get FPS, total_frames, duration               │        │
+│  │    ├── Calculate 15 timestamps:                      │        │
+│  │    │   Skip first 10% and last 10%                  │        │
+│  │    │   Distribute evenly in middle 80%              │        │
+│  │    │                                                  │        │
+│  │    ├── FOR EACH timestamp:                            │        │
+│  │    │   cap.set(POS_FRAMES, frame_num)               │        │
+│  │    │   ret, frame = cap.read()                      │        │
+│  │    │   cv2.imwrite(candidate_path, frame)           │        │
+│  │    │                                                  │        │
+│  │    └── Returns: [(path, timestamp), ...]             │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 3b: AI FRAME SCORING ──────────────────────┐         │
+│  │                                                      │        │
+│  │  _calculate_frame_score()                            │        │
+│  │    Libraries: OpenCV + NumPy                         │        │
+│  │                                                      │        │
+│  │    SCORING (0-100 per frame):                        │        │
+│  │                                                      │        │
+│  │    1. BRIGHTNESS (15% weight):                       │        │
+│  │       gray = cv2.cvtColor(BGR2GRAY)                 │        │
+│  │       mean = np.mean(gray)                          │        │
+│  │       <30 = 0 (too dark)                            │        │
+│  │       80-180 = 100 (ideal)                          │        │
+│  │       >220 = 30 (too bright)                        │        │
+│  │                                                      │        │
+│  │    2. SHARPNESS (25% weight):                        │        │
+│  │       laplacian = cv2.Laplacian(gray, CV_64F).var() │        │
+│  │       <50 = 0 (very blurry)                         │        │
+│  │       >500 = 100 (very sharp)                       │        │
+│  │                                                      │        │
+│  │    3. FACE DETECTION (30% weight):                   │        │
+│  │       cascade = haarcascade_frontalface_default.xml  │        │
+│  │       faces = detectMultiScale(gray)                 │        │
+│  │       Face found = 70-100                            │        │
+│  │       No face = 0                                    │        │
+│  │       Larger face = higher score                     │        │
+│  │                                                      │        │
+│  │    4. COLOR VARIETY (15% weight):                    │        │
+│  │       small = cv2.resize(img, 50x50)                │        │
+│  │       unique_colors = np.unique(...)                 │        │
+│  │       More colors = higher score                     │        │
+│  │                                                      │        │
+│  │    5. CONTRAST (15% weight):                         │        │
+│  │       std = np.std(gray)                             │        │
+│  │       <20 = 30 (low contrast)                       │        │
+│  │       >80 = 100 (high contrast)                     │        │
+│  │                                                      │        │
+│  │    TOTAL = weighted sum of all scores               │        │
+│  │    Sort frames by score (descending)                │        │
+│  │    Select top 3                                      │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 3c: TEMPLATE APPLICATION ──────────────────┐         │
+│  │                                                      │        │
+│  │  33 TEMPLATES (TEMPLATE_CATALOG):                    │        │
+│  │  ├── Viral (5): MrBeast, Shock, Money, Challenge...  │        │
+│  │  ├── TikTok (5): Gradient, Aesthetic, Y2K, POV...    │        │
+│  │  ├── News (4): Breaking, Live, Data, Interview       │        │
+│  │  ├── Comedy (4): Meme, Funny, Comedy Show, Prank     │        │
+│  │  ├── Food (4): Recipe, Sweet, Asian, Healthy         │        │
+│  │  ├── Fitness (3): Beast, Champion, Motivation        │        │
+│  │  ├── Education (3): Tutorial, Tips, Deep Dive        │        │
+│  │  ├── Cinematic (2): Movie, Mystery                   │        │
+│  │  ├── Business (2): Corporate, Tech/Gaming            │        │
+│  │  └── Kids (1): Rainbow/Fun                           │        │
+│  │                                                      │        │
+│  │  EACH TEMPLATE DEFINES:                              │        │
+│  │  ├── text_color, stroke_color, stroke_width          │        │
+│  │  ├── font_size_ratio, font_weight                    │        │
+│  │  ├── text_position (top/center/bottom)               │        │
+│  │  ├── emoji_style (from 30 emoji packs)               │        │
+│  │  ├── effects (list of filters)                       │        │
+│  │  ├── overlay (optional: banner, stripes)             │        │
+│  │  ├── border (optional: color + width)                │        │
+│  │  └── text_examples (auto-text options)               │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 3d: IMAGE COMPOSITION ─────────────────────┐         │
+│  │                                                      │        │
+│  │  _create_thumbnail():                                │        │
+│  │  Library: Pillow (PIL)                              │        │
+│  │                                                      │        │
+│  │  1. _apply_bg_effects():                             │        │
+│  │     ├── ImageEnhance.Contrast(1.3)                  │        │
+│  │     ├── ImageEnhance.Color(1.4)                     │        │
+│  │     ├── ImageEnhance.Brightness(0.7)                │        │
+│  │     ├── Vignette overlay                             │        │
+│  │     ├── Color tints (warm/cool/red/green)           │        │
+│  │     └── Blur/Neon effects                            │        │
+│  │                                                      │        │
+│  │  2. _detect_face_pil():                              │        │
+│  │     ├── Convert PIL → OpenCV                         │        │
+│  │     ├── detectMultiScale()                           │        │
+│  │     └── Returns face bounding box                   │        │
+│  │                                                      │        │
+│  │  3. _add_overlays():                                 │        │
+│  │     ├── Colored borders                              │        │
+│  │     ├── Red banners                                  │        │
+│  │     └── Warning stripes                              │        │
+│  │                                                      │        │
+│  │  4. _add_text():                                     │        │
+│  │     ├── _load_font() (10 weight options)            │        │
+│  │     ├── _calculate_text_position()                   │        │
+│  │     │   └── AVOIDS face bounding box                │        │
+│  │     ├── Draw stroke (outline)                        │        │
+│  │     └── Draw main text                               │        │
+│  │                                                      │        │
+│  │  5. img.save(output, quality=95)                     │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  LIBRARIES:                                                      │
+│  ├── cv2 (OpenCV)  → Frame extraction, face detection           │
+│  ├── numpy         → Frame scoring calculations                 │
+│  ├── PIL (Pillow)  → Image editing, text, effects               │
+│  └── subprocess    → FFmpeg fallback                            │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+🤖 AI TITLE GENERATION FLOW
+text
+
+STEP 4: AI TITLE
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ai_writer.py → AIWriter class                                   │
+│                                                                  │
+│  rewrite_title_with_hashtags(original_title)                     │
+│       │                                                          │
+│       ├── IF OpenAI API key configured:                         │
+│       │   │                                                      │
+│       │   ├── _call_api() with retry (3 attempts)              │
+│       │   │   Library: openai (OpenAI class)                    │
+│       │   │   ├── Model: gpt-4o-mini                            │
+│       │   │   ├── Temperature: 0.8                              │
+│       │   │   └── Max tokens: 200                               │
+│       │   │                                                      │
+│       │   ├── Prompt:                                            │
+│       │   │   "For this video title: '{title}'                  │
+│       │   │    Return EXACTLY:                                   │
+│       │   │    TITLE: [viral title with emojis]                 │
+│       │   │    TAGS: [8-10 hashtags]"                           │
+│       │   │                                                      │
+│       │   ├── Parse response:                                    │
+│       │   │   ├── Extract TITLE line                            │
+│       │   │   └── Extract TAGS line                             │
+│       │   │                                                      │
+│       │   └── Rate limit handling:                               │
+│       │       ├── Wait 20s × attempt number                     │
+│       │       └── Fallback to local if fails                    │
+│       │                                                          │
+│       └── IF no API key (LOCAL FALLBACK):                       │
+│           │                                                      │
+│           ├── _local_rewrite_title()                             │
+│           │   ├── random emoji from 15 options                  │
+│           │   ├── random power word from 10 options             │
+│           │   ├── random template from 5 formats                │
+│           │   └── Returns: "🔥 You Won't Believe! {title} 😱"  │
+│           │                                                      │
+│           └── _local_generate_hashtags()                         │
+│               ├── random hashtag set from 5 options             │
+│               ├── topic-based tags from title words             │
+│               └── Returns: "#viral #trending #foryou"           │
+│                                                                  │
+│  API KEY LOOKUP ORDER:                                           │
+│  ├── 1. Environment: OPENAI_API_KEY                             │
+│  ├── 2. Constructor parameter                                   │
+│  └── 3. File: openai_key.txt                                   │
+│                                                                  │
+│  LIBRARIES:                                                      │
+│  ├── openai    → GPT API calls                                  │
+│  ├── random    → Local fallback                                 │
+│  ├── os        → Key file loading                               │
+│  └── time      → Rate limit waits                               │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+📤 FACEBOOK UPLOAD FLOW
+text
+
+UPLOAD TO FACEBOOK
+     │
+     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  background_uploader()  ← main.py (threading.Thread)             │
+│       │                                                          │
+│  ┌─── STEP 5a: PRE-UPLOAD CHECKS ─────────────────────┐        │
+│  │                                                      │        │
+│  │  1. Get workspace details                            │        │
+│  │     └── db.get_workspace_details(ws_name)            │        │
+│  │                                                      │        │
+│  │  2. Get Chrome profile path                          │        │
+│  │     └── Verify path exists                           │        │
+│  │                                                      │        │
+│  │  3. Find edited video file                           │        │
+│  │     ├── Check vid_data[3] (local_path)              │        │
+│  │     ├── Search for [EDITED]_ prefix                 │        │
+│  │     └── Any valid video file                         │        │
+│  │                                                      │        │
+│  │  4. Parse schedule time                              │        │
+│  │     ├── "NOW" → immediate upload                    │        │
+│  │     ├── "HH:MM" → today/tomorrow                   │        │
+│  │     ├── "YYYY-MM-DD HH:MM" → exact time            │        │
+│  │     └── + random offset (5-25 min)                  │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 5b: CHROME LAUNCH ─────────────────────────┐         │
+│  │                                                      │        │
+│  │  FacebookUploader(chrome_user_data_dir)              │        │
+│  │  ← uploader.py                                       │        │
+│  │                                                      │        │
+│  │  1. _kill_chrome()                                   │        │
+│  │     Library: psutil                                  │        │
+│  │     ├── Find Chrome processes matching OUR profile  │        │
+│  │     ├── Kill ONLY matching PIDs                     │        │
+│  │     ├── Delete lock files (SingletonLock etc.)      │        │
+│  │     └── Wait 3 seconds                              │        │
+│  │                                                      │        │
+│  │  2. Chrome Options:                                  │        │
+│  │     Library: selenium (Options, Service)             │        │
+│  │     ├── --user-data-dir={path}                      │        │
+│  │     ├── --profile-directory={dir}                   │        │
+│  │     ├── --start-maximized                           │        │
+│  │     ├── --disable-blink-features=AutomationControlled│       │
+│  │     ├── excludeSwitches: ["enable-automation"]      │        │
+│  │     └── --no-sandbox, --disable-gpu etc.            │        │
+│  │                                                      │        │
+│  │  3. webdriver.Chrome(service, options)               │        │
+│  │     ├── Uses chromedriver.exe                        │        │
+│  │     └── Anti-detection JS injection:                │        │
+│  │         navigator.webdriver = undefined              │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 5c: WARMUP (Human Behavior) ───────────────┐         │
+│  │                                                      │        │
+│  │  _do_human_warmup()                                  │        │
+│  │                                                      │        │
+│  │  Duration: random(15-45 seconds)                     │        │
+│  │                                                      │        │
+│  │  ACTIVITIES (random selection):                      │        │
+│  │  ├── scroll_feed (50% chance):                      │        │
+│  │  │   window.scrollBy({top: 300-800, smooth})        │        │
+│  │  │   + reading time (2-5s)                          │        │
+│  │  │                                                    │        │
+│  │  ├── watch_reels (15% chance):                      │        │
+│  │  │   Click Reels link                               │        │
+│  │  │   Watch 1-3 reels (3-8s each)                   │        │
+│  │  │   Scroll to next reel                            │        │
+│  │  │   Go back to feed                                │        │
+│  │  │                                                    │        │
+│  │  ├── scroll_up_review (15% chance):                 │        │
+│  │  │   window.scrollBy({top: -100 to -400})           │        │
+│  │  │                                                    │        │
+│  │  └── open_post (20% chance):                        │        │
+│  │      Scroll + pause (3-7s)                          │        │
+│  │                                                      │        │
+│  │  Random pauses between activities (1-3s)            │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 5d: PAGE SWITCHER ─────────────────────────┐         │
+│  │                                                      │        │
+│  │  _switch_to_target_page(page_name)                   │        │
+│  │                                                      │        │
+│  │  1. Check current profile:                           │        │
+│  │     _get_current_profile_name()                      │        │
+│  │     ├── Method 1: Profile pic alt/aria              │        │
+│  │     ├── Method 2: Sidebar shortcut text             │        │
+│  │     └── Method 3: "What's on your mind, NAME?"     │        │
+│  │                                                      │        │
+│  │  2. IF already on target → skip                     │        │
+│  │                                                      │        │
+│  │  3. Click profile switcher (top-right)              │        │
+│  │     └── JavaScript: find button by aria-label       │        │
+│  │                                                      │        │
+│  │  4. Find target page in dropdown                    │        │
+│  │     └── _click_page_in_menu()                       │        │
+│  │         Case-insensitive text matching              │        │
+│  │                                                      │        │
+│  │  5. IF not found → Click "See all profiles"         │        │
+│  │     └── Find in full list                            │        │
+│  │                                                      │        │
+│  │  6. Verify switch                                    │        │
+│  │     └── _verify_page_switch() (5 attempts)          │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── STEP 5e: ACTUAL UPLOAD ──────────────────────────┐        │
+│  │                                                      │        │
+│  │  _do_upload()                                        │        │
+│  │                                                      │        │
+│  │  1. Open Business Suite:                             │        │
+│  │     driver.get("business.facebook.com/latest/home") │        │
+│  │     Wait 8 seconds                                   │        │
+│  │                                                      │        │
+│  │  2. Click "Create Post":                             │        │
+│  │     JavaScript: find button by text                 │        │
+│  │     Wait 7 seconds for composer                     │        │
+│  │                                                      │        │
+│  │  3. Attach video:                                    │        │
+│  │     _attach_video_native()                           │        │
+│  │     ├── Find "Add photo/video" button               │        │
+│  │     │   Selenium: find_elements(CSS_SELECTOR)       │        │
+│  │     ├── Click button → OS file dialog opens         │        │
+│  │     │   ActionChains: move + pause + click          │        │
+│  │     ├── Type file path:                              │        │
+│  │     │   Library: pyperclip (copy path)              │        │
+│  │     │   Library: pyautogui (Ctrl+V + Enter)         │        │
+│  │     └── Wait 5 seconds for attachment               │        │
+│  │                                                      │        │
+│  │  4. Fill caption:                                    │        │
+│  │     _fill_caption()                                  │        │
+│  │     ├── Find contenteditable div                    │        │
+│  │     │   JavaScript: aria-label matching             │        │
+│  │     ├── Type caption:                                │        │
+│  │     │   ActionChains.send_keys(title)               │        │
+│  │     └── Fallback: JS innerText injection            │        │
+│  │                                                      │        │
+│  │  5. Publish flow:                                    │        │
+│  │     _publish_now()                                   │        │
+│  │     ├── Wait for video upload (max 30 min)          │        │
+│  │     │   Poll every 5s for button enabled            │        │
+│  │     │   _close_popups() periodically                │        │
+│  │     │                                                │        │
+│  │     ├── Screen detection:                            │        │
+│  │     │   _get_current_screen()                       │        │
+│  │     │   ├── "create" → Click "Next"                 │        │
+│  │     │   ├── "edit"   → Click "Next"                 │        │
+│  │     │   └── "share"  → Click "Share"                │        │
+│  │     │                                                │        │
+│  │     ├── Smart button click:                          │        │
+│  │     │   _click_smart_button()                       │        │
+│  │     │   Score buttons by position                   │        │
+│  │     │   Prefer bottom-right (publish area)          │        │
+│  │     │                                                │        │
+│  │     └── Post-publish:                                │        │
+│  │         _wait_for_boost_popup_and_dismiss()          │        │
+│  │         Click "Maybe later" (max 5 min wait)        │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  LIBRARIES:                                                      │
+│  ├── selenium        → Chrome automation                        │
+│  │   ├── webdriver.Chrome                                       │
+│  │   ├── ActionChains                                           │
+│  │   ├── WebDriverWait                                          │
+│  │   └── JavaScript execution                                   │
+│  ├── pyautogui       → OS dialog interaction                    │
+│  ├── pyperclip       → Clipboard operations                     │
+│  ├── psutil          → Process killing                          │
+│  ├── subprocess      → ChromeDriver launch                      │
+│  └── time/random     → Delays and waits                         │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+💾 DATABASE SCHEMA
+text
+
+┌─────────────────────────────────────────────────────────────────┐
+│  fb_automation_v3.db (SQLite3)                                   │
+│  ← db_manager.py (DatabaseManager class)                        │
+│                                                                  │
+│  ┌─── TABLE: workspaces ──────────────────────────────┐         │
+│  │                                                      │        │
+│  │  id              INTEGER PRIMARY KEY AUTOINCREMENT   │        │
+│  │  profile_name    TEXT UNIQUE NOT NULL                │        │
+│  │  target_fb_url   TEXT                                │        │
+│  │  chrome_path     TEXT                                │        │
+│  │  proxy           TEXT                                │        │
+│  │  added_on        DATETIME                            │        │
+│  │  warmup_enabled  INTEGER DEFAULT 1                   │        │
+│  │  warmup_min      INTEGER DEFAULT 15                  │        │
+│  │  warmup_max      INTEGER DEFAULT 45                  │        │
+│  │  offset_enabled  INTEGER DEFAULT 1                   │        │
+│  │  offset_min      INTEGER DEFAULT 5                   │        │
+│  │  offset_max      INTEGER DEFAULT 25                  │        │
+│  │  persona_json    TEXT (JSON string)                  │        │
+│  │  is_pinned       INTEGER DEFAULT 0                   │        │
+│  │  is_archived     INTEGER DEFAULT 0                   │        │
+│  │  tags_json       TEXT (JSON string)                  │        │
+│  │  custom_color    TEXT                                │        │
+│  │  last_activity   DATETIME                            │        │
+│  │  description     TEXT                                │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── TABLE: page_videos ─────────────────────────────┐         │
+│  │                                                      │        │
+│  │  id              INTEGER PRIMARY KEY AUTOINCREMENT   │        │
+│  │  workspace_name  TEXT → FK to workspaces             │        │
+│  │  source_url      TEXT                                │        │
+│  │  local_path      TEXT                                │        │
+│  │  title           TEXT                                │        │
+│  │  description     TEXT                                │        │
+│  │  schedule_time   TEXT                                │        │
+│  │  status          TEXT DEFAULT "PENDING_DOWNLOAD"     │        │
+│  │  added_on        DATETIME                            │        │
+│  │  thumb_path      TEXT                                │        │
+│  │                                                      │        │
+│  │  STATUS VALUES:                                      │        │
+│  │  ├── PENDING_DOWNLOAD                               │        │
+│  │  ├── STARTING...                                     │        │
+│  │  ├── DOWNLOADING XX%                                │        │
+│  │  ├── MERGING...                                      │        │
+│  │  ├── EDITING...                                      │        │
+│  │  ├── THUMBNAIL...                                    │        │
+│  │  ├── AI TITLE...                                     │        │
+│  │  ├── READY_TO_POST                                   │        │
+│  │  ├── UPLOADING...                                    │        │
+│  │  ├── PUBLISHED                                       │        │
+│  │  ├── PAUSED                                          │        │
+│  │  ├── STOPPED                                         │        │
+│  │  ├── DOWNLOAD_FAILED                                │        │
+│  │  ├── EDIT_FAILED                                     │        │
+│  │  ├── UPLOAD FAILED                                   │        │
+│  │  ├── NO CHROME PATH                                  │        │
+│  │  └── FILE MISSING                                    │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  THREAD SAFETY:                                                  │
+│  ├── threading.Lock() for all writes                            │
+│  ├── Per-call connections (contextmanager)                       │
+│  ├── WAL journal mode                                            │
+│  └── 30 second timeout                                          │
+│                                                                  │
+│  MIGRATION SYSTEM:                                               │
+│  └── _add_missing_columns() on startup                          │
+│      Checks PRAGMA table_info()                                  │
+│      Adds new columns safely                                     │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+📊 PRESET SYSTEM FLOW
+text
+
+┌─────────────────────────────────────────────────────────────────┐
+│  preset_manager.py (PresetManager class)                         │
+│                                                                  │
+│  STORAGE: presets/user_presets.json                              │
+│                                                                  │
+│  BUILT-IN PRESETS (3):                                           │
+│  ├── StealthMax v2.0  → All anti-detect ON                     │
+│  ├── Balanced         → Medium stealth + quality                │
+│  └── Visual Quality   → Best quality, less stealth              │
+│                                                                  │
+│  OPERATIONS:                                                     │
+│  ├── save_preset(name, dict)                                    │
+│  ├── get_preset(name) → dict                                   │
+│  ├── delete_preset(name)                                        │
+│  ├── rename_preset(old, new)                                    │
+│  ├── duplicate_preset(name, new_name)                           │
+│  ├── export_preset(name, filepath)                              │
+│  ├── import_preset(filepath)                                    │
+│  └── get_preset_summary(name) → text                           │
+│                                                                  │
+│  PRESET DICT FORMAT:                                             │
+│  {                                                               │
+│    "name": "StealthMax v2.0",                                   │
+│    "metadata_spoof": true,      ← Anti-detect (11 options)     │
+│    "micro_rotation": true,                                       │
+│    "dct_hash_break": true,                                       │
+│    "rgb_micro_shift": true,                                      │
+│    "audio_phase_shift": true,                                    │
+│    "dynamic_range_shift": true,                                  │
+│    "harmonic_micro": true,                                       │
+│    "film_grain": true,                                           │
+│    "border_injection": true,                                     │
+│    "micro_warp": true,                                           │
+│    "auto_trim_edges": true,                                      │
+│    "grain_intensity": 3,        ← Slider values                │
+│    "speed": 1.03,                                                │
+│    "crop_percent": 96,                                           │
+│    "crop_position": "Center",   ← Dropdown values              │
+│    "blur_logo_pos": "None",                                      │
+│    "mirror_flip": false,                                         │
+│    "color_grade": "None",                                        │
+│    "brightness": 0.01,                                           │
+│    "contrast": 1.01,                                             │
+│    "saturation": 1.01,                                           │
+│    "vignette": false,                                            │
+│    "sharpen": false,                                             │
+│    "zoom_effect": false,                                         │
+│    "volume": 1.0,                                                │
+│    "audio_pitch": 0.5,                                           │
+│    "bass_boost": false,                                          │
+│    "fade_in_out": false,                                         │
+│    "remove_audio": false,                                        │
+│    "silence_padding": false,                                     │
+│    "trim_start": "00:00:00",                                     │
+│    "trim_end": "00:00:00",                                       │
+│  }                                                               │
+│                                                                  │
+│  LIBRARIES: json, os, shutil                                    │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+📊 EXCEL LOGGING FLOW
+text
+
+┌─────────────────────────────────────────────────────────────────┐
+│  EXCEL LOGGING (2 systems)                                       │
+│                                                                  │
+│  ┌─── SYSTEM 1: Per-Workspace Excel ──────────────────┐         │
+│  │  ← main.py → log_to_workspace_excel()               │        │
+│  │                                                      │        │
+│  │  PATH: C:\ChromeBot\{ws}\{ws}_log.xlsx              │        │
+│  │  Library: openpyxl                                   │        │
+│  │                                                      │        │
+│  │  COLUMNS:                                            │        │
+│  │  ID | Workspace | Title | Status |                  │        │
+│  │  Scheduled Time | Source URL |                       │        │
+│  │  Local File | Added On | Updated On                 │        │
+│  │                                                      │        │
+│  │  LOGIC:                                              │        │
+│  │  ├── IF file exists → load_workbook()               │        │
+│  │  ├── IF video_id exists → UPDATE row                │        │
+│  │  ├── IF new → APPEND row                            │        │
+│  │  └── Save (atomic write)                             │        │
+│  │                                                      │        │
+│  │  CALLED WHEN:                                        │        │
+│  │  ├── Video processed → "READY_TO_POST"              │        │
+│  │  ├── Video uploaded  → "PUBLISHED"                  │        │
+│  │  └── Upload failed   → "UPLOAD FAILED"              │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+│  ┌─── SYSTEM 2: Global Tracker ───────────────────────┐         │
+│  │  ← sheet_manager.py → SheetManager class            │        │
+│  │                                                      │        │
+│  │  PATH: FB_Empire_Live_Tracker.xlsx                  │        │
+│  │  Library: pandas + openpyxl                          │        │
+│  │                                                      │        │
+│  │  3 SHEETS:                                           │        │
+│  │  ├── 📹 Video Tracker (all videos)                  │        │
+│  │  ├── 📁 Workspaces (all workspaces)                 │        │
+│  │  └── 📊 Summary (stats)                             │        │
+│  │                                                      │        │
+│  │  FEATURES:                                           │        │
+│  │  ├── Color-coded rows by status                     │        │
+│  │  ├── Auto-width columns                              │        │
+│  │  ├── Frozen header row                               │        │
+│  │  ├── Backup rotation (max 3)                        │        │
+│  │  └── Atomic write (tmp file → rename)               │        │
+│  │                                                      │        │
+│  └──────────────────────────────────────────────────────┘        │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+🔄 THREADING MODEL
+text
+
+┌─────────────────────────────────────────────────────────────────┐
+│  THREADING ARCHITECTURE                                          │
+│                                                                  │
+│  MAIN THREAD (UI):                                               │
+│  ├── CustomTkinter event loop                                   │
+│  ├── All UI rendering                                            │
+│  ├── User input handling                                         │
+│  ├── Toast notifications                                         │
+│  └── self.after() timer callbacks                               │
+│                                                                  │
+│  BACKGROUND THREADS:                                             │
+│                                                                  │
+│  ├── Auto-sync thread (self.after, 3000ms):                    │
+│  │   ├── Check data hash changed                               │
+│  │   ├── Update tab counts                                      │
+│  │   └── Refresh video list (only if changed)                  │
+│  │                                                               │
+│  ├── Download/Process thread (per video):                       │
+│  │   threading.Thread(target=background_processor, daemon=True) │
+│  │   ├── Download video                                         │
+│  │   ├── Edit video                                             │
+│  │   ├── Generate thumbnail                                     │
+│  │   ├── Generate AI title                                      │
+│  │   └── Update DB status                                       │
+│  │                                                               │
+│  ├── Upload thread (per video):                                 │
+│  │   threading.Thread(target=background_uploader, daemon=True)  │
+│  │   ├── Launch Chrome                                          │
+│  │   ├── Warmup activities                                      │
+│  │   ├── Upload video                                           │
+│  │   └── Handle boost popup                                     │
+│  │                                                               │
+│  └── Chrome clone thread:                                       │
+│      threading.Thread(target=clone_worker, daemon=True)         │
+│      └── Copy Chrome profile files                              │
+│                                                                  │
+│  SYNCHRONIZATION:                                                │
+│  ├── threading.Lock() → _upload_lock (upload serialization)    │
+│  ├── _selection_locked flag → Prevent refresh during select    │
+│  ├── _process_stop_flags dict → Per-video stop control         │
+│  ├── _process_pause_flags dict → Per-video pause control       │
+│  └── self.after() → Thread-safe UI updates                     │
+│                                                                  │
+│  THREAD-SAFE UI UPDATE PATTERN:                                  │
+│  self.after(0, lambda: lbl.configure(text="..."))              │
+│  (Schedules update on main thread's event loop)                 │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+📊 COMPLETE LIBRARY USAGE MAP
+text
+
+┌─────────────────────────────────────────────────────────────────┐
+│  LIBRARY → FILE → PURPOSE                                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  customtkinter    → main.py                                      │
+│                     All UI: CTk, CTkFrame, CTkButton,           │
+│                     CTkLabel, CTkEntry, CTkSlider,               │
+│                     CTkCheckBox, CTkOptionMenu,                  │
+│                     CTkTabview, CTkScrollableFrame,               │
+│                     CTkProgressBar, CTkTextbox,                   │
+│                     CTkToplevel                                   │
+│                                                                  │
+│  sqlite3          → db_manager.py                                │
+│                     Database CRUD, migrations,                    │
+│                     WAL mode, thread-safe connections             │
+│                                                                  │
+│  yt-dlp           → downloader.py                                │
+│                     Video download from 1000+ sites,             │
+│                     metadata extraction, format selection         │
+│                                                                  │
+│  instaloader      → downloader.py                                │
+│                     Instagram fallback download,                  │
+│                     Post.from_shortcode(), download_post()        │
+│                                                                  │
+│  requests         → downloader.py                                │
+│                     Direct image/video HTTP downloads,            │
+│                     Streaming download with progress              │
+│                                                                  │
+│  selenium         → uploader.py                                  │
+│                     Chrome WebDriver, Options, Service,           │
+│                     ActionChains, WebDriverWait,                  │
+│                     By, Keys, EC                                  │
+│                                                                  │
+│  pyautogui        → uploader.py                                  │
+│                     OS file dialog: Ctrl+V, Enter,               │
+│                     typewrite() fallback                          │
+│                                                                  │
+│  pyperclip        → uploader.py                                  │
+│                     Clipboard: copy file path for                 │
+│                     paste in OS dialog                            │
+│                                                                  │
+│  opencv-python    → thumbnail_gen.py                             │
+│  (cv2)              VideoCapture, frame extraction,              │
+│                     face detection (Haar cascade),                │
+│                     color conversion, image analysis              │
+│                                                                  │
+│  numpy            → thumbnail_gen.py, video_editor.py            │
+│                     Image array operations,                       │
+│                     mean, std, unique, var                         │
+│                                                                  │
+│  Pillow (PIL)     → thumbnail_gen.py                             │
+│                     Image open/save/resize,                       │
+│                     ImageDraw (text, shapes),                     │
+│                     ImageFont (truetype loading),                 │
+│                     ImageFilter (blur, sharpen),                  │
+│                     ImageEnhance (brightness, contrast)           │
+│                                                                  │
+│  openai           → ai_writer.py                                 │
+│                     OpenAI() client,                              │
+│                     chat.completions.create(),                    │
+│                     GPT-4o-mini model                             │
+│                                                                  │
+│  mutagen          → video_editor.py                              │
+│                     MP4() class, tag reading/writing,             │
+│                     Metadata injection post-FFmpeg                │
+│                                                                  │
+│  pandas           → sheet_manager.py, main.py                    │
+│                     read_sql_query(), read_csv(),                 │
+│                     read_excel(), ExcelWriter()                   │
+│                                                                  │
+│  openpyxl         → sheet_manager.py, main.py                    │
+│                     load_workbook(), Workbook(),                  │
+│                     PatternFill, Font, Alignment,                 │
+│                     Column width, freeze_panes                    │
+│                                                                  │
+│  APScheduler      → scheduler.py                                 │
+│                     BackgroundScheduler,                          │
+│                     interval jobs, date jobs                      │
+│                                                                  │
+│  psutil           → uploader.py, main.py                         │
+│                     process_iter(), kill(),                       │
+│                     Chrome process management                     │
+│                                                                  │
+│  json             → db_manager.py, preset_manager.py             │
+│                     Persona serialization,                        │
+│                     preset save/load, tags storage                │
+│                                                                  │
+│  threading        → main.py                                      │
+│                     Thread(), Lock(), daemon threads              │
+│                                                                  │
+│  subprocess       → video_editor.py, thumbnail_gen.py,           │
+│                     uploader.py                                   │
+│                     FFmpeg execution, ffprobe analysis,           │
+│                     Chrome launch                                 │
+│                                                                  │
+│  os/shutil        → ALL FILES                                    │
+│                     File operations, path management,             │
+│                     directory creation, file copy/move            │
+│                                                                  │
+│  random           → downloader.py, video_editor.py               │
+│                     Delays, encoding params, GPS variation,       │
+│                     user-agent selection, template selection       │
+│                                                                  │
+│  datetime         → ALL FILES                                    │
+│                     Timestamps, date formatting,                  │
+│                     time calculations, scheduling                 │
+│                                                                  │
+│  re               → downloader.py, video_editor.py               │
+│                     URL parsing, filename sanitization,           │
+│                     FFmpeg progress parsing                       │
+│                                                                  │
+│  uuid             → video_editor.py                              │
+│                     Unique identifiers for metadata               │
+│                                                                  │
+│  string           → video_editor.py                              │
+│                     Random string generation                      │
+│                                                                  │
+│  tempfile         → video_editor.py                              │
+│                     Temp directory for FFmpeg                     │
+│                                                                  │
+│  glob             → downloader.py                                │
+│                     File pattern matching                         │
+│                                                                  │
+│  traceback        → uploader.py, video_editor.py                 │
+│                     Error stack traces                            │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+🔒 ANTI-DETECTION SUMMARY
+text
+
+┌─────────────────────────────────────────────────────────────────┐
+│  ANTI-DETECTION LAYERS                                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  LAYER 1: VIDEO HASH BREAK (video_editor.py)                    │
+│  ├── Speed change (PTS)                                         │
+│  ├── Center crop (96%)                                          │
+│  ├── Micro rotation (0.05-0.2°)                                │
+│  ├── RGB channel shift (±0.004)                                 │
+│  ├── Light noise (1-2 pixels)                                   │
+│  ├── Film grain (1-10 intensity)                                │
+│  ├── Perspective warp (1-3px)                                   │
+│  ├── Border injection (1-2px)                                   │
+│  └── Auto edge trim (0.4-0.8s)                                 │
+│                                                                  │
+│  LAYER 2: AUDIO FINGERPRINT (video_editor.py)                   │
+│  ├── Audio phase shift (adelay)                                 │
+│  ├── Dynamic range compression                                  │
+│  ├── Volume micro variation                                     │
+│  ├── Speed sync (atempo)                                        │
+│  └── Optional: bass boost, fade, silence                        │
+│                                                                  │
+│  LAYER 3: METADATA SPOOF (video_editor.py + mutagen)            │
+│  ├── Device info (make, model, software)                        │
+│  ├── GPS coordinates (USA city ± 2km)                           │
+│  ├── Creation timestamp (weighted business hours)               │
+│  ├── Apple/Android specific tags                                │
+│  ├── Random encoding params (CRF, GOP, refs)                   │
+│  └── Mutagen deep tag poisoning                                 │
+│                                                                  │
+│  LAYER 4: PERSONA SYSTEM (db_manager.py)                        │
+│  ├── Fixed device per workspace (13 real devices)               │
+│  ├── Fixed USA city per workspace (15 cities)                   │
+│  ├── Consistent identity across all videos                      │
+│  └── Real manufacturer specs (accurate)                         │
+│                                                                  │
+│  LAYER 5: DOWNLOAD STEALTH (downloader.py)                      │
+│  ├── User-agent rotation (8 desktop + 3 mobile)                │
+│  ├── Human-like delays (platform-specific)                     │
+│  ├── Cookie file support (browser login)                        │
+│  ├── Auto-break after 15 downloads                              │
+│  └── Weighted random wait patterns                              │
+│                                                                  │
+│  LAYER 6: UPLOAD STEALTH (uploader.py)                          │
+│  ├── Real Chrome profile (not headless)                         │
+│  ├── navigator.webdriver = undefined                            │
+│  ├── Human warmup scrolling (15-45s)                           │
+│  ├── Random activities (reels, feed, posts)                     │
+│  ├── Profile-specific Chrome killing                            │
+│  └── Random time offset for schedules                           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+📊 VIDEO STATUS LIFECYCLE
+text
+
+┌─────────────────────────────────────────────────────────────────┐
+│  VIDEO STATUS FLOW                                               │
+│                                                                  │
+│  PENDING_DOWNLOAD                                                │
+│       │                                                          │
+│       ▼ (Click "Download & Process")                            │
+│  STARTING...                                                     │
+│       │                                                          │
+│       ├──→ STOPPED (if user clicks Stop)                        │
+│       │                                                          │
+│       ▼                                                          │
+│  DOWNLOADING XX%                                                 │
+│       │                                                          │
+│       ├──→ DOWNLOAD_FAILED (if error)                           │
+│       ├──→ PAUSED (if user clicks Pause)                        │
+│       │       │                                                  │
+│       │       ▼ (Click Resume)                                   │
+│       │    DOWNLOADING XX% (continue)                            │
+│       │                                                          │
+│       ▼                                                          │
+│  MERGING... (yt-dlp merging audio+video)                        │
+│       │                                                          │
+│       ▼                                                          │
+│  EDITING... (FFmpeg anti-detect processing)                      │
+│       │                                                          │
+│       ├──→ EDIT_FAILED (if FFmpeg error)                        │
+│       │                                                          │
+│       ▼                                                          │
+│  THUMBNAIL... (optional - if enabled)                            │
+│       │                                                          │
+│       ▼                                                          │
+│  AI TITLE... (generating viral title)                            │
+│       │                                                          │
+│       ▼                                                          │
+│  READY_TO_POST ✅                                                │
+│       │                                                          │
+│       ▼ (Click "Post to Facebook")                              │
+│  CHECKING FILES...                                               │
+│       │                                                          │
+│       ├──→ NO CHROME PATH (if not configured)                   │
+│       ├──→ FILE MISSING (if video deleted)                      │
+│       │                                                          │
+│       ▼                                                          │
+│  OPENING BROWSER...                                              │
+│       │                                                          │
+│       ▼                                                          │
+│  UPLOADING...                                                    │
+│       │                                                          │
+│       ├──→ UPLOAD FAILED (if Chrome/FB error)                   │
+│       │                                                          │
+│       ▼                                                          │
+│  PUBLISHED ✅🎉                                                  │
+│                                                                  │
+│  CATEGORIZATION:                                                 │
+│  ├── "pending" tab:    PENDING_DOWNLOAD, *_FAILED, STOPPED     │
+│  ├── "processing" tab: STARTING, DOWNLOADING, MERGING,          │
+│  │                      EDITING, THUMBNAIL, AI TITLE,            │
+│  │                      UPLOADING, PAUSED                        │
+│  └── "done" tab:       PUBLISHED                                │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+⚙️ EXTERNAL TOOLS INTERACTION
+text
+
+┌─────────────────────────────────────────────────────────────────┐
+│  EXTERNAL TOOLS & HOW THEY'RE USED                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  FFmpeg (ffmpeg.exe):                                            │
+│  ├── Called by: video_editor.py, thumbnail_gen.py               │
+│  ├── Method: subprocess.Popen()                                 │
+│  ├── Used for:                                                   │
+│  │   ├── Video encoding/decoding                                │
+│  │   ├── Filter application (crop, rotate, etc.)                │
+│  │   ├── Audio processing                                       │
+│  │   ├── Metadata injection                                     │
+│  │   ├── Format conversion                                      │
+│  │   └── Frame extraction (fallback)                            │
+│  └── Output: Edited MP4 files                                   │
+│                                                                  │
+│  FFprobe (ffprobe.exe):                                          │
+│  ├── Called by: video_editor.py, downloader.py                  │
+│  ├── Method: subprocess.run()                                   │
+│  ├── Used for:                                                   │
+│  │   ├── Get video dimensions (width, height)                   │
+│  │   ├── Get frame rate (fps)                                    │
+│  │   ├── Get duration                                            │
+│  │   └── Get resolution                                         │
+│  └── Output: JSON/CSV metadata                                  │
+│                                                                  │
+│  ChromeDriver (chromedriver.exe):                                │
+│  ├── Called by: uploader.py                                     │
+│  ├── Method: selenium.webdriver.Chrome(service=Service(...))    │
+│  ├── Used for:                                                   │
+│  │   ├── Automated Chrome browser control                       │
+│  │   ├── Navigate to Facebook                                    │
+│  │   ├── Fill forms                                              │
+│  │   ├── Click buttons                                           │
+│  │   └── Execute JavaScript                                     │
+│  └── Requires: Matching Chrome version                          │
+│                                                                  │
+│  Chrome Browser (chrome.exe):                                    │
+│  ├── Called by: main.py (for login), uploader.py (for upload)  │
+│  ├── Method: subprocess.Popen() or selenium                    │
+│  ├── Used for:                                                   │
+│  │   ├── Facebook login (manual - user)                         │
+│  │   ├── Automated upload (bot)                                 │
+│  │   └── Cookie storage (profile-based)                         │
+│  └── Profile isolation: Each workspace = separate profile       │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+🎯 SUMMARY TABLE
+text
+
+┌────────────────────┬──────────────────────┬─────────────────────┐
+│ FILE               │ MAIN PURPOSE         │ KEY LIBRARIES       │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ main.py            │ UI + App Logic       │ customtkinter       │
+│                    │ (~5000 lines)        │ threading           │
+│                    │                      │ openpyxl            │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ db_manager.py      │ Database CRUD        │ sqlite3             │
+│                    │ Thread-safe          │ json                │
+│                    │ Migrations           │ threading           │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ downloader.py      │ Universal Download   │ yt-dlp              │
+│                    │ Human behavior       │ instaloader         │
+│                    │ Cookie support       │ requests            │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ video_editor.py    │ Anti-detect Edit     │ subprocess(FFmpeg)  │
+│                    │ 18 techniques        │ mutagen             │
+│                    │ Persona metadata     │ random              │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ uploader.py        │ Facebook Upload      │ selenium            │
+│                    │ Human warmup         │ pyautogui           │
+│                    │ Page switch          │ pyperclip           │
+│                    │                      │ psutil              │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ thumbnail_gen.py   │ 33 Templates         │ opencv-python       │
+│                    │ Smart frame detect   │ numpy               │
+│                    │ Face detection       │ Pillow              │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ ai_writer.py       │ Viral titles         │ openai              │
+│                    │ Hashtags             │ random              │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ preset_manager.py  │ Preset save/load     │ json                │
+│                    │ Import/export        │ shutil              │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ sheet_manager.py   │ Excel tracker        │ pandas              │
+│                    │ Global stats         │ openpyxl            │
+├────────────────────┼──────────────────────┼─────────────────────┤
+│ scheduler.py       │ Post scheduling      │ APScheduler         │
+└────────────────────┴──────────────────────┴─────────────────────┘

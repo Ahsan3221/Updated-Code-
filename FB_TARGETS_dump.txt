@@ -1,0 +1,425 @@
+{
+
+    // ═══ POST CREATION (Business Suite) ═══
+
+    // Old create_post - kept for backward compatibility
+    // But smart_post_button is preferred for BS
+    create_post: {
+        textPatterns: [
+            'create post', 'create a post',
+            'write something', "what's on your mind",
+            'share what', 'create reel'
+        ],
+        ariaPatterns: [
+            'create a post', 'create post',
+            'make a post', 'new post',
+            'write a post', 'compose'
+        ],
+        selectors: [
+            'div[role="button"][aria-label*="post" i]',
+            'div[role="button"][aria-label*="create" i]',
+            'div[data-testid*="composer"]',
+            'div[data-testid*="create"]'
+        ],
+        svgPaths: ['pencil', 'edit', 'compose'],
+        position: { maxY: 0.3, maxX: 0.5 },
+        priority: [
+            'selectors', 'ariaPatterns',
+            'textPatterns', 'svgPaths', 'position'
+        ]
+    },
+
+    // NEW: Smart post button (icon + sibling based)
+    // Text changes seasonally, so we find by:
+    // 1. Sibling of "Create Reel" (which is stable)
+    // 2. Position (first in action row, top area)
+    // 3. Icon detection (pencil/paper SVG)
+    smart_post_button: {
+        textPatterns: [
+            'make a post', 'create post', 'create a post',
+            'post for', 'share post', 'new post'
+        ],
+        ariaPatterns: [
+            'create post', 'make post', 'new post'
+        ],
+        selectors: [
+            'div[role="button"][aria-label*="post" i]:not([aria-label*="reel" i]):not([aria-label*="story" i]):not([aria-label*="ad" i])'
+        ],
+        siblingOf: 'create reel',
+        position: { maxY: 0.4, maxX: 0.6 },
+        priority: [
+            'siblingOf', 'ariaPatterns',
+            'textPatterns', 'selectors', 'position'
+        ]
+    },
+
+    // Add photo/video button (STABLE TEXT)
+    add_photo_video: {
+        textPatterns: [
+            'add photo/video', 'photo/video',
+            'photo or video', 'add photos/videos',
+            'add media'
+        ],
+        ariaPatterns: [
+            'add photo', 'photo video',
+            'add media'
+        ],
+        selectors: [
+            'div[role="button"][aria-label*="photo" i]',
+            'div[role="button"][aria-label*="video" i]',
+            'div[role="button"][aria-label*="media" i]'
+        ],
+        svgPaths: ['camera', 'image', 'photo', 'video'],
+        position: { minY: 0.3 },
+        priority: [
+            'textPatterns', 'ariaPatterns',
+            'selectors', 'svgPaths'
+        ]
+    },
+
+    // Caption/description box
+    caption_box: {
+        textPatterns: [
+            'write something',
+            "what's on your mind",
+            'say something about this',
+            'add a description'
+        ],
+        ariaPatterns: [
+            'write something',
+            "what's on your mind",
+            'create a public post', 'description'
+        ],
+        selectors: [
+            'div[contenteditable="true"][role="textbox"]',
+            'div[contenteditable="true"][aria-label*="mind" i]',
+            'div[contenteditable="true"][aria-label*="write" i]',
+            'div[contenteditable="true"][aria-label*="description" i]',
+            'div[contenteditable="true"]'
+        ],
+        position: {},
+        priority: [
+            'selectors', 'ariaPatterns', 'textPatterns'
+        ]
+    },
+
+    // NEW: Reel description box (Create step)
+    reel_description: {
+        textPatterns: [
+            'let viewers know',
+            'about your reel'
+        ],
+        ariaPatterns: [
+            'description', 'add a description',
+            'reel description'
+        ],
+        selectors: [
+            'div[contenteditable="true"][aria-label*="description" i]',
+            'div[contenteditable="true"][role="textbox"]',
+            'textarea[placeholder*="viewers" i]',
+            'div[contenteditable="true"]'
+        ],
+        position: { maxY: 0.7 },
+        priority: [
+            'ariaPatterns', 'selectors',
+            'textPatterns', 'position'
+        ]
+    },
+
+    // ═══ PUBLISH / SHARE / NEXT BUTTONS ═══
+
+    // Generic share button (for posts)
+    share_button: {
+        textPatterns: ['share', 'post', 'publish'],
+        ariaPatterns: ['share', 'publish', 'post'],
+        selectors: [
+            'div[role="button"][aria-label="Share"]',
+            'div[role="button"][aria-label="Post"]',
+            'div[role="button"][aria-label="Publish"]'
+        ],
+        position: { minY: 0.7, minX: 0.5 },
+        priority: [
+            'selectors', 'textPatterns', 'position'
+        ],
+        mustBeEnabled: true
+    },
+
+    // NEW: Publish button (for POSTS - not reels)
+    publish_button: {
+        textPatterns: ['publish'],
+        ariaPatterns: ['publish'],
+        selectors: [
+            'div[role="button"][aria-label="Publish"]',
+            'button[aria-label="Publish"]'
+        ],
+        position: { minY: 0.85, minX: 0.5 },
+        priority: [
+            'ariaPatterns', 'textPatterns',
+            'selectors', 'position'
+        ],
+        mustBeEnabled: true
+    },
+
+    // NEW: Share button (for REELS - final step)
+    reel_share_button: {
+        textPatterns: ['share'],
+        ariaPatterns: ['share'],
+        selectors: [
+            'div[role="button"][aria-label="Share"]',
+            'button[aria-label="Share"]'
+        ],
+        position: { minY: 0.85, minX: 0.7 },
+        priority: [
+            'ariaPatterns', 'textPatterns',
+            'selectors', 'position'
+        ],
+        mustBeEnabled: true
+    },
+
+    // Next button (multi-step composer)
+    next_button: {
+        textPatterns: ['next'],
+        ariaPatterns: ['next'],
+        selectors: [
+            'div[role="button"][aria-label="Next"]',
+            'button[aria-label="Next"]'
+        ],
+        position: { minY: 0.85, minX: 0.7 },
+        priority: [
+            'ariaPatterns', 'selectors',
+            'textPatterns', 'position'
+        ],
+        mustBeEnabled: true
+    },
+
+    // ═══ POPUPS / DISMISS BUTTONS ═══
+
+    // Generic maybe later (works for most popups)
+    maybe_later: {
+        textPatterns: [
+            'maybe later', 'not now', 'skip',
+            'no thanks', 'dismiss'
+        ],
+        ariaPatterns: [
+            'maybe later', 'dismiss', 'close'
+        ],
+        selectors: [
+            'div[role="button"][aria-label*="later" i]',
+            'div[role="button"][aria-label="Close"]'
+        ],
+        position: {},
+        priority: [
+            'textPatterns', 'selectors', 'ariaPatterns'
+        ]
+    },
+
+    // NEW: Boost popup specific "Maybe later"
+    boost_maybe_later: {
+        textPatterns: ['maybe later'],
+        ariaPatterns: ['maybe later'],
+        selectors: [
+            'div[role="dialog"] div[role="button"]'
+        ],
+        insideDialog: true,
+        priority: [
+            'textPatterns', 'ariaPatterns',
+            'selectors'
+        ]
+    },
+
+    // NEW: Switched to page popup close (X button)
+    switched_popup_close: {
+        textPatterns: [],
+        ariaPatterns: ['close', 'dismiss'],
+        selectors: [
+            'div[aria-label="Close"][role="button"]',
+            'div[role="button"][aria-label*="close" i]'
+        ],
+        position: { maxY: 0.95, maxX: 0.5 },
+        priority: [
+            'ariaPatterns', 'selectors', 'position'
+        ]
+    },
+
+    // ═══ PROFILE / PAGE SWITCHING ═══
+
+    // Profile switcher (top-right corner)
+    profile_switcher: {
+        textPatterns: [],
+        ariaPatterns: [
+            'your profile', 'account controls',
+            'account', 'profile menu',
+            'switch profile'
+        ],
+        selectors: [
+            'div[role="button"][aria-label*="profile" i]',
+            'div[role="button"][aria-label*="account" i]'
+        ],
+        position: { maxY: 0.1, minX: 0.85 },
+        priority: [
+            'position', 'ariaPatterns', 'selectors'
+        ]
+    },
+
+    // Alias for profile_switcher (kept for compatibility)
+    profile_menu_link: {
+        textPatterns: [],
+        ariaPatterns: [
+            'your profile',
+            'account controls',
+            'account'
+        ],
+        selectors: [
+            'div[role="button"][aria-label*="profile" i]',
+            'div[role="button"][aria-label*="account" i]'
+        ],
+        position: { maxY: 0.1, minX: 0.85 },
+        priority: [
+            'position', 'selectors', 'ariaPatterns'
+        ]
+    },
+
+    // Page in profile dropdown menu (dynamic name)
+    page_in_menu: {
+        textPatterns: [],
+        selectors: [
+            'div[role="menuitem"]',
+            'div[role="option"]',
+            'div[role="button"]',
+            'li[role="option"]'
+        ],
+        hasImage: true,
+        insideDialog: false,
+        priority: ['dynamic_text', 'selectors']
+    },
+
+    // See all profiles button
+    see_all_profiles: {
+        textPatterns: [
+            'see all profiles',
+            'see all pages',
+            'switch profile',
+            'view all profiles'
+        ],
+        ariaPatterns: [
+            'see all profiles',
+            'see all pages'
+        ],
+        selectors: [
+            'div[role="button"][aria-label*="all profiles" i]',
+            'div[role="button"][aria-label*="all pages" i]'
+        ],
+        priority: [
+            'textPatterns', 'ariaPatterns', 'selectors'
+        ]
+    },
+
+    // ═══ NAVIGATION LINKS ═══
+
+    // Meta Business Suite link (in page's left sidebar)
+    meta_business_suite: {
+        textPatterns: [
+            'meta business suite',
+            'business suite',
+            'go to business suite'
+        ],
+        ariaPatterns: [
+            'meta business suite',
+            'business suite'
+        ],
+        selectors: [
+            'a[href*="business.facebook.com"]',
+            'div[role="link"][aria-label*="business" i]',
+            'a[aria-label*="business" i]'
+        ],
+        position: { maxX: 0.25 },
+        priority: [
+            'textPatterns', 'ariaPatterns',
+            'selectors', 'position'
+        ]
+    },
+
+    // Facebook logo (top-left)
+    facebook_logo: {
+        textPatterns: [],
+        ariaPatterns: ['facebook', 'home'],
+        selectors: [
+            'a[aria-label="Facebook"]',
+            'a[href="/"]',
+            'a[href="https://www.facebook.com/"]'
+        ],
+        position: { maxY: 0.1, maxX: 0.15 },
+        priority: [
+            'selectors', 'ariaPatterns', 'position'
+        ]
+    },
+
+    // Business Suite navigation
+    home_menu: {
+        textPatterns: ['home', 'dashboard'],
+        ariaPatterns: ['home'],
+        selectors: [
+            'a[href*="/latest/home"]',
+            'div[role="link"][aria-label*="home" i]'
+        ],
+        position: { maxX: 0.25, maxY: 0.3 },
+        priority: [
+            'position', 'ariaPatterns', 'selectors'
+        ]
+    },
+
+    posts_menu: {
+        textPatterns: [
+            'posts', 'content', 'posts & stories'
+        ],
+        ariaPatterns: ['posts', 'content'],
+        selectors: [
+            'a[href*="posts"]',
+            'a[href*="content"]',
+            'div[role="link"][aria-label*="posts" i]'
+        ],
+        position: { maxX: 0.25 },
+        priority: [
+            'ariaPatterns', 'textPatterns',
+            'selectors', 'position'
+        ]
+    },
+
+    planner_menu: {
+        textPatterns: ['planner', 'schedule', 'calendar'],
+        ariaPatterns: ['planner', 'schedule'],
+        selectors: [
+            'a[href*="planner"]',
+            'div[role="link"][aria-label*="planner" i]'
+        ],
+        position: { maxX: 0.25 },
+        priority: [
+            'ariaPatterns', 'textPatterns',
+            'selectors', 'position'
+        ]
+    },
+
+    schedule_button: {
+        textPatterns: [
+            'schedule', 'scheduling options',
+            'schedule post', 'schedule for later'
+        ],
+        ariaPatterns: ['schedule', 'scheduling'],
+        selectors: [
+            'div[aria-label*="Schedule" i]',
+            '[aria-haspopup="listbox"]'
+        ],
+        position: { minY: 0.3 },
+        priority: [
+            'textPatterns', 'ariaPatterns', 'selectors'
+        ]
+    },
+
+    // ═══ FILE INPUT ═══
+
+    file_input: {
+        selectors: ['input[type="file"]'],
+        priority: ['selectors'],
+        returnElement: true
+    }
+}

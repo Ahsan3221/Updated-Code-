@@ -1,0 +1,146 @@
+# ═══════════════════════════════════════════════════════════════
+# FB Empire Auto-Bot V10.0 | Premium Edition
+# Complete Python Package Requirements
+# ═══════════════════════════════════════════════════════════════
+#
+# INSTALLATION:
+#   pip install -r requirements.txt
+#
+# If numpy conflicts:
+#   pip install numpy==1.26.4 --force-reinstall
+#
+# Update all packages:
+#   pip install -r requirements.txt --upgrade
+#
+# ═══════════════════════════════════════════════════════════════
+
+
+# ─── CORE UI ───────────────────────────────────────────────
+customtkinter==5.2.2
+
+
+# ─── DATABASE ─────────────────────────────────────────────
+# sqlite3 is built-in with Python (no install needed)
+
+
+# ─── VIDEO DOWNLOAD ───────────────────────────────────────
+yt-dlp>=2024.03.10
+instaloader>=4.15.0
+
+
+# ─── VIDEO EDITING & PROCESSING ────────────────────────────
+# ⚠️ FFmpeg must be installed separately (see README.md)
+# Download from: https://www.gyan.dev/ffmpeg/builds/
+
+
+# ─── BROWSER AUTOMATION ────────────────────────────────────
+selenium>=4.15.0
+pyautogui>=0.9.54
+pyperclip>=1.8.2
+
+
+# ─── AI TITLE GENERATION ───────────────────────────────────
+openai>=1.35.0
+
+
+# ─── EXCEL / DATA HANDLING ─────────────────────────────────
+pandas==2.2.0
+openpyxl>=3.1.2
+numpy==1.26.4
+
+
+# ─── IMAGE PROCESSING ──────────────────────────────────────
+Pillow>=10.3.0
+opencv-python>=4.9.0
+
+
+# ─── SCHEDULING ────────────────────────────────────────────
+APScheduler>=3.10.4
+
+
+# ─── SYSTEM & PROCESS MANAGEMENT ───────────────────────────
+psutil>=5.9.8
+
+
+# ─── HTTP REQUESTS ─────────────────────────────────────────
+requests>=2.31.0
+
+
+# ─── METADATA HANDLING (Anti-Detect) ───────────────────────
+mutagen>=1.47.0
+
+
+# ═══════════════════════════════════════════════════════════════
+# ADDITIONAL MANUAL SETUP REQUIRED (Not Python packages):
+# ═══════════════════════════════════════════════════════════════
+#
+# 1️⃣  FFmpeg (For video editing)
+#     Download: https://www.gyan.dev/ffmpeg/builds/
+#     Extract to: C:\ffmpeg
+#     Add to PATH: C:\ffmpeg\bin
+#     Verify: ffmpeg -version
+#
+# 2️⃣  ChromeDriver (For Facebook automation)
+#     Check Chrome version: chrome://version
+#     Download: https://googlechromelabs.github.io/chrome-for-testing/
+#     Place: app/chromedriver.exe
+#     Version MUST match your Chrome browser
+#
+# 3️⃣  Chrome Extension (For Instagram/FB cookies)
+#     Name: "Get cookies.txt LOCALLY"
+#     Install from Chrome Web Store
+#     Link: https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc
+#     Export cookies to: app/cookies/{platform}_cookies.txt
+#
+# ═══════════════════════════════════════════════════════════════
+# TROUBLESHOOTING:
+# ═══════════════════════════════════════════════════════════════
+#
+# ❌ "numpy" conflict with pandas:
+#    pip install numpy==1.26.4 --force-reinstall
+#
+# ❌ "ffmpeg not found":
+#    Check FFmpeg is in PATH: ffmpeg -version
+#    If not, add C:\ffmpeg\bin to system PATH
+#
+# ❌ "chromedriver" version mismatch:
+#    Update Chrome + download matching ChromeDriver
+#
+# ❌ "Module not found" errors:
+#    pip install -r requirements.txt --force-reinstall
+#
+# ❌ Instagram "empty media response":
+#    Export fresh cookies to app/cookies/instagram_cookies.txt
+#
+# ❌ Old pip warning:
+#    python -m pip install --upgrade pip
+#
+# ═══════════════════════════════════════════════════════════════
+# QUICK COMMANDS:
+# ═══════════════════════════════════════════════════════════════
+#
+# Install everything:
+#   pip install -r requirements.txt
+#
+# Fix common numpy issue:
+#   pip install numpy==1.26.4 --force-reinstall
+#
+# Update yt-dlp (important for downloads):
+#   pip install -U yt-dlp
+#
+# Update all packages:
+#   pip install -r requirements.txt --upgrade
+#
+# Update pip:
+#   python -m pip install --upgrade pip
+#
+# Check installed packages:
+#   pip list
+#
+# Check specific package:
+#   pip show yt-dlp
+#
+# Run the app:
+#   python main.py
+#
+# ═══════════════════════════════════════════════════════════════
